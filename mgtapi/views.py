@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from mgtapi.models import Task, User
+from mgtapi.models import Task, User, Status
 from mgtapi.serializers import TaskSerializer, UserSerializer
 
 @api_view(['GET'])
@@ -24,6 +24,7 @@ def post_data(request):
 def put_data(request, id):
     try:
         task = Task.objects.get(id=id)
+        # if task.status == Status.COMPLETED:
     except Task.DoesNotExist:
         return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
     serializer = TaskSerializer(task, data=request.data)

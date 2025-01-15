@@ -5,25 +5,10 @@ from rest_framework import serializers
 
 from mgtapi.models import Task, User
 
-
-# def validate_fields(due_date):
-#     try:
-#         # due_date = datetime.strptime(due_date, '%d/%m/%Y').date()
-#         if due_date <= date.today().strftime('%Y-%m-%d'):
-#             raise serializers.ValidationError("The due date must be in the future.")
-#         return True
-#     except ValueError:
-#         print("Invalid due date")
-#         return False
-
-
 def validate_fields(val):
-    # Implement your custom validation logic here
-    # For example, check if the date is in the future
     if val < datetime.now().strftime('%Y-%m-%d'):
         return False
     return True
-
 
 class TaskSerializer(serializers.ModelSerializer):
     def validate(self, data):
