@@ -35,4 +35,4 @@ class AppUserSerializer(serializers.ModelSerializer):
             models.UniqueConstraint(fields=['username'], name='unique_val')
         ]
         model = AppUser
-        fields = ['id', 'username', 'email', 'password', 'tasks']
+        fields = ['id', 'username', 'email', 'tasks']

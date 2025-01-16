@@ -1,5 +1,7 @@
 from datetime import date
 
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -63,6 +65,8 @@ def get_users(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_user(request):
+    data = request.data
+    request.data['password'] = make_password(request.data['password'])
     serializer = AppUserSerializer(data=request.data)
 
     if serializer.is_valid():
