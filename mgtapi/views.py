@@ -86,3 +86,15 @@ def get_filtered_status_priority_due_date(request):
         due_date_filter=Task.objects.filter(due_date__lte=date.today())
         serializer=TaskSerializer(due_date_filter, many=True)
         return Response(serializer.data)
+    elif filter=='sort':
+        tasks=Task.objects.all().order_by(value)
+        print(tasks.count())
+        serializer=TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+    elif filter=='sort#':
+        tasks=Task.objects.all().order_by(value).reverse()
+        serializer=TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+
+def myfunc(e):
+  return len(e)
