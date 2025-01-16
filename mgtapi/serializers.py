@@ -3,7 +3,8 @@ from datetime import datetime
 from django.db import models
 from rest_framework import serializers
 
-from mgtapi.models import Task, User
+from mgtapi.models import Task, AppUser
+
 
 def validate_fields(val):
     if val < datetime.now().strftime('%Y-%m-%d'):
@@ -27,11 +28,11 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = '__all__'
 
-class UserSerializer(serializers.ModelSerializer):
+class AppUserSerializer(serializers.ModelSerializer):
     tasks = TaskSerializer(many=True, read_only=True)
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['username'], name='unique_val')
         ]
-        model = User
+        model = AppUser
         fields = ['id', 'username', 'email', 'password', 'tasks']

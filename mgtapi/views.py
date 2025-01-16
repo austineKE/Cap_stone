@@ -3,8 +3,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from mgtapi.models import Task, User, Status
-from mgtapi.serializers import TaskSerializer, UserSerializer
+from mgtapi.models import Task, Status, AppUser
+from mgtapi.serializers import TaskSerializer, AppUserSerializer
+
 
 @api_view(['GET'])
 def get_data(self):
@@ -46,8 +47,8 @@ def delete_data(request, pk):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_users(self):
-    queryset = User.objects.all()
-    serializer = UserSerializer(queryset, many=True)
+    queryset = AppUser.objects.all()
+    serializer = AppUserSerializer(queryset, many=True)
     return Response(serializer.data)
 
 @api_view(['POST'])
@@ -58,7 +59,7 @@ def create_user(request):
         password = request.data.get('password')
         print("Username:", username)
         print("Password:", password)
-    serializer = UserSerializer(data=request.data)
+    serializer = AppUserSerializer(data=request.data)
 
     if serializer.is_valid():
         serializer.save()

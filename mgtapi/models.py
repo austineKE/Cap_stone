@@ -1,5 +1,6 @@
 from enum import Enum
 
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
@@ -21,11 +22,17 @@ class PriorityLevel(Enum):
     def choices(cls):
         return [(status.value, status.name.title()) for status in cls]
 
-class User(models.Model):
-        id = models.AutoField(primary_key=True)
-        username = models.CharField(max_length=50)
-        email = models.EmailField(max_length=50)
-        password = models.CharField(max_length=255)
+class AppUser(AbstractUser):
+        email = models.EmailField(unique=True)
+        username = models.CharField(max_length=30, unique=True)
+        password = models.CharField(max_length=128)
+        last_login = models.DateTimeField(auto_now=True)
+        is_active = models.BooleanField(default=True)
+        is_superuser = models.BooleanField(default=False)
+        first_name = models.CharField(max_length=30, blank=True)
+        last_name = models.CharField(max_length=30, blank=True)
+        is_staff = models.BooleanField(default=False)
+        date_joined = models.DateTimeField(auto_now_add=True)
 
         class Meta:
             db_table = 'app_user'
@@ -38,6 +45,7 @@ class Task(models.Model):
     title = models.CharField(max_length=50)
     due_date = models.DateTimeField(max_length=50)
     description = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=20,
         choices=Status.choices(),
@@ -48,7 +56,8 @@ class Task(models.Model):
         choices=PriorityLevel.choices(),
         default=PriorityLevel.LOW.value
     )
-    user = models.ManyToManyField(User, related_name='tasks')
+    user = models.ManyToManyField(AppUser, related_name='tasks')
+
     class Meta:
         db_table = 'task'
 
