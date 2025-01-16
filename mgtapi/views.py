@@ -5,19 +5,23 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from mgtapi.auth import get_username_from_jwt
 from mgtapi.models import Task, AppUser
 from mgtapi.serializers import TaskSerializer, AppUserSerializer
 
-
 @api_view(['GET'])
-def get_data(self):
-    queryset = Task.objects.all()
+def get_data(request):
+    validate_user_permission(request)
+    queryset = Task.objects.all().filter(user=request.user.id)
     serializer = TaskSerializer(queryset, many=True)
     return Response(serializer.data)
 
 @api_view(['POST'])
 def post_data(request):
-    serializer = TaskSerializer(data=request.data)
+    app_user= validate_user_permission(request)
+    data = request.data
+    data['user'] = {app_user['id']}
+    serializer = TaskSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return Response({"message": "Task created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED)
@@ -25,6 +29,7 @@ def post_data(request):
 
 @api_view(['PUT'])
 def put_data(request, id):
+    validate_user_permission(request)
     try:
         task = Task.objects.get(id=id)
         # if task.status == Status.COMPLETED:
@@ -38,6 +43,7 @@ def put_data(request, id):
 
 @api_view(['DELETE'])
 def delete_data(request, pk):
+    validate_user_permission(request)
     try:
         task = Task.objects.get(pk=pk)
     except Task.DoesNotExist:
@@ -48,7 +54,8 @@ def delete_data(request, pk):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def get_users(self):
+def get_users(request):
+    validate_user_permission(request)
     queryset = AppUser.objects.all()
     serializer = AppUserSerializer(queryset, many=True)
     return Response(serializer.data)
@@ -56,11 +63,6 @@ def get_users(self):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_user(request):
-    if request.method == 'POST':
-        username = request.data.get('username')
-        password = request.data.get('password')
-        print("Username:", username)
-        print("Password:", password)
     serializer = AppUserSerializer(data=request.data)
 
     if serializer.is_valid():
@@ -71,6 +73,7 @@ def create_user(request):
 
 @api_view(['GET'])
 def get_filtered_status_priority_due_date(request):
+    validate_user_permission(request)
     filter=request.data.get('filter')
     value=request.data.get('value')
 
@@ -96,5 +99,16 @@ def get_filtered_status_priority_due_date(request):
         serializer=TaskSerializer(tasks, many=True)
         return Response(serializer.data)
 
-def myfunc(e):
-  return len(e)
+def get_username_from_token_from_request(request):
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token= auth_header.split(" ")[1]
+        return get_username_from_jwt(token)
+    return None
+
+def validate_user_permission(request):
+    user_id = get_username_from_token_from_request(request)
+    app_user = AppUserSerializer(request.user).data
+    if user_id != app_user['id']:
+        return Response('You are not authorized to access this resource', status=status.HTTP_200_OK)
+    return app_user
