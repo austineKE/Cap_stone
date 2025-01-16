@@ -1,7 +1,8 @@
 from django.urls import path
 
 from mgtapi.auth import CustomTokenObtainPairView
-from mgtapi.views import get_users, create_user, delete_data, put_data, post_data, get_data
+from mgtapi.views import get_users, create_user, delete_data, put_data, post_data, get_data, \
+    get_filtered_status_priority_due_date
 
 urlpatterns = [
     path('task/get', get_data, name='Get tasks'),
@@ -12,4 +13,5 @@ urlpatterns = [
     path('api/token/refresh/', CustomTokenObtainPairView.as_view(), name='token_refresh'),
     path('user/create', create_user, name='create user'),
     path('users/', get_users, name='get users'),
+    path('task/filter', get_filtered_status_priority_due_date, name='get filter'),
 ]

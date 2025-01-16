@@ -1,9 +1,11 @@
+from datetime import date
+
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from mgtapi.models import Task, Status, AppUser
+from mgtapi.models import Task, AppUser
 from mgtapi.serializers import TaskSerializer, AppUserSerializer
 
 
@@ -66,3 +68,21 @@ def create_user(request):
         return Response({"message": "User created successfully!", "data": serializer.data},
                         status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_filtered_status_priority_due_date(request):
+    filter=request.data.get('filter')
+    value=request.data.get('value')
+
+    if filter=='status':
+        status_filter=Task.objects.filter(status=value)
+        serializer=TaskSerializer(status_filter, many=True)
+        return Response(serializer.data)
+    elif filter=='priority':
+        priority_filter=Task.objects.filter(priorityLevel=value)
+        serializer=TaskSerializer(priority_filter, many=True)
+        return Response(serializer.data)
+    elif filter=='due_date':
+        due_date_filter=Task.objects.filter(due_date__lte=date.today())
+        serializer=TaskSerializer(due_date_filter, many=True)
+        return Response(serializer.data)
