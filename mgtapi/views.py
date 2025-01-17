@@ -149,3 +149,16 @@ def delete_user(request, pk):
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     user.delete()
     return Response({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['PUT'])
+def put_user(request, id):
+    validate_user_permission(request)
+    try:
+        user = AppUser.objects.get(id=id)
+    except AppUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    serializer = AppUserSerializer(user, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
