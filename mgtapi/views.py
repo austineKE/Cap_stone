@@ -139,3 +139,13 @@ def validate_user_permission(request):
     if user_id != app_user['id']:
         return Response('You are not authorized to access this resource', status=status.HTTP_200_OK)
     return app_user
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_user(request, pk):
+    try:
+        user = AppUser.objects.get(pk=pk)
+    except AppUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    user.delete()
+    return Response({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
