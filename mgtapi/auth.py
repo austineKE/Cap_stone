@@ -18,7 +18,7 @@ def get_username_from_jwt(token):
     try:
         # Decode the token
         decoded_payload = UntypedToken(token)
-        return decoded_payload.get("user_id")  # Extract the username
+        return decoded_payload.get("user_id")
     except (InvalidToken, TokenError) as e:
         print(f"Invalid token: {e}")
         return None

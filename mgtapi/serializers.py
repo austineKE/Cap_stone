@@ -26,7 +26,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['title', 'description', 'due_date', 'status', 'priorityLevel', 'user']
+        fields = ['id', 'title', 'description', 'due_date', 'status', 'priorityLevel', 'user']
 
 class AppUserSerializer(serializers.ModelSerializer):
     tasks = TaskSerializer(many=True, read_only=True)

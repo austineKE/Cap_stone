@@ -1,7 +1,6 @@
 from datetime import date
 
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -10,6 +9,7 @@ from rest_framework.response import Response
 from mgtapi.auth import get_username_from_jwt
 from mgtapi.models import Task, AppUser
 from mgtapi.serializers import TaskSerializer, AppUserSerializer
+
 
 @api_view(['GET'])
 def get_data(request):
@@ -102,6 +102,29 @@ def get_filtered_status_priority_due_date(request):
         tasks=Task.objects.all().order_by(value).reverse()
         serializer=TaskSerializer(tasks, many=True)
         return Response(serializer.data)
+
+@api_view(['POST'])
+def share_tasks(request):
+    app_user=validate_user_permission(request)
+    provided_user=AppUser.objects.get(username=request.data['username'])
+    if provided_user is None:
+        return Response({'error': 'User not found with username ' + request.user.username}, status=status.HTTP_404_NOT_FOUND)
+    provided_task=Task.objects.get(id=request.data['taskId'])
+    if provided_task is None:
+        return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if app_user['tasks'][0]['user'][0] != provided_task.id:
+        my_task= Task.objects.get(id=provided_task.id)
+        print(my_task.pk)
+        my_task.user.set([provided_user])
+        serializer=TaskSerializer(data={'user':list([provided_user.id]), 'title': my_task.title, 'due_date': my_task.due_date}, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'Task shared successfully!'})
+    else:
+        return Response({'error': 'Task not assigned to you'}, status=status.HTTP_404_NOT_FOUND)
 
 def get_username_from_token_from_request(request):
     auth_header = request.headers.get("Authorization", "")
